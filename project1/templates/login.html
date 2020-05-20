@@ -1,11 +1,24 @@
 {% extends "index.html" %}
 
 {% block body %}
-  {% if msg %}{{ msg }}{% endif %}
-  <form action="{{ url_for('login') }}" method="post">
-    <input type="text" name="username" placeholder="Enter Your Username">
-    <input type="password" name="password" placeholder="Enter Your Password">
-    <button>Login</button>
-  </form>
-  <a href="{{ url_for('register') }}">Register</a>
+  <div class="container">
+    <form action="" method="post">
+      {{ form. hidden_tag() }}
+      <fieldset class="form-group">
+        <legend class="border-bottom mb-4">Login</legend>
+        <div class="form-group">
+          {{ form.username.label(class="form-control-label") }}
+          {{ form.username(class="form-control form-control-lg") }}
+        </div>
+        <div class="form-group">
+          {{ form.password.label(class="form-control-label") }}
+          {{ form.password(class="form-control form-control-lg") }}
+        </div>
+      </fieldset>
+      <div class="form-group">
+        {{ form.submit(class="btn btn-outline-info") }}
+      </div>
+    </form>
+  </div>
+
 {% endblock %}

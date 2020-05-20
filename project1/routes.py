@@ -1,6 +1,7 @@
-from flask import session, render_template, request, redirect, url_for
+from flask import session, render_template, request, redirect, url_for, flash
 from project1.models import Book, User, Review
 from project1 import app
+from project1.forms import RegistrationForm, LoginForm
 import csv
 
 from project1 import db
@@ -16,60 +17,58 @@ def index():
 def login():
     """Login page"""
 
-    # User submitted credentials
-    if request.method == 'POST':
+    form = LoginForm()  # Create the wtf form to pass to template
 
+    # User submitted credentials
+    if form.validate_on_submit():
         # Grab the input from the user
         name = request.form.get("username")
         password = request.form.get("password")
-
         # See if the input matches any records
         user = User.query.filter_by(name=name, password=password).first()
-
         # Credentials do not exist
         if user is None:
+            # Create flash error message and send user back to login
+            flash('Username or Password is Incorrect', 'danger')
             return render_template('login.html', title="Login Page",
-                heading="Login", msg="Username or Password is incorrect")
-        else:
-            return redirect(url_for('profile', id=user.id))
+                form=form)
+        else: # Success
+            return redirect(url_for('index'))
+    # GET request
     else:
-        return render_template('login.html', title="Login Page", heading="Login")
+        return render_template('login.html', title="Login Page", form=form)
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():
     """Used to register a new user"""
 
-    if request.method == 'POST':
-
-        username = request.form.get("name")
-        # Confirm username is valid
+    # Create the form
+    form = RegistrationForm()
+    # Validate the form
+    if form.validate_on_submit():
+        # Grab the username the user entered
+        username = request.form.get("username")
+        # Query database for username
         check_name = User.query.filter_by(name=username).first()
-        # Username does not yet exist
+        # Check if username is taken
         if check_name is None:
-            # Check that the passwords matches
+            # Grab the password and create the user
             pass1 = request.form.get("password")
-            pass2 = request.form.get("confirm_password")
+            user = User(name=username, password=pass1)
+            db.session.add(user)
+            db.session.commit()
 
-            # Passwords match
-            if pass1 == pass2:
-                # Add the user to the database
-                new_user = User(name=username, password=pass1)
-                db.session.add(new_user)
-                db.session.commit()
+            # Create success flash message and send user to home screen
+            flash(f"Successfully Created Account For {username}", 'success')
+            return redirect(url_for('index'))
 
-                # Redirect to the new users profile Page
-                return redirect(url_for('profile', id=new_user.id))
-            # The passwords did not match
-            else:
-                return render_template('register.html', title="Register",
-                    heading="Register", msg="Passwords do not match")
-        # This username already exists
         else:
+            flash(f'Username Is Taken', 'danger')
             return render_template('register.html', title="Register",
-                heading="Register", msg="This username already exists")
+                form=form)
 
     else:
-        return render_template('register.html', title="Register", heading="Register")
+        return render_template('register.html', title="Register", form=form)
 
 @app.route("/profile/<int:id>")
 def profile(id):

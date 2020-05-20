@@ -13,6 +13,7 @@ app = Flask(__name__)
 Bootstrap(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite3'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = 'superSecretKey'
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 
