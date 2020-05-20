@@ -10,27 +10,76 @@ from project1 import db
 def index():
     """Default page"""
 
-    return redirect(url_for('login')) # Start by going directly to login page
+    return render_template('index.html')
 
 @app.route("/login", methods=['GET', 'POST'])
 def login():
     """Login page"""
 
+    # User submitted credentials
     if request.method == 'POST':
+
+        # Grab the input from the user
         name = request.form.get("username")
         password = request.form.get("password")
-        return f"{name} : {password}"
+
+        # See if the input matches any records
+        user = User.query.filter_by(name=name, password=password).first()
+
+        # Credentials do not exist
+        if user is None:
+            return render_template('login.html', title="Login Page",
+                heading="Login", msg="Username or Password is incorrect")
+        else:
+            return redirect(url_for('profile', id=user.id))
     else:
         return render_template('login.html', title="Login Page", heading="Login")
 
-@app.route("/register")
+@app.route("/register", methods=['GET', 'POST'])
 def register():
     """Used to register a new user"""
 
-@app.route("/UserProfile/<string:username>")
-def profile(username):
+    if request.method == 'POST':
+
+        username = request.form.get("name")
+        # Confirm username is valid
+        check_name = User.query.filter_by(name=username).first()
+        # Username does not yet exist
+        if check_name is None:
+            # Check that the passwords matches
+            pass1 = request.form.get("password")
+            pass2 = request.form.get("confirm_password")
+
+            # Passwords match
+            if pass1 == pass2:
+                # Add the user to the database
+                new_user = User(name=username, password=pass1)
+                db.session.add(new_user)
+                db.session.commit()
+
+                # Redirect to the new users profile Page
+                return redirect(url_for('profile', id=new_user.id))
+            # The passwords did not match
+            else:
+                return render_template('register.html', title="Register",
+                    heading="Register", msg="Passwords do not match")
+        # This username already exists
+        else:
+            return render_template('register.html', title="Register",
+                heading="Register", msg="This username already exists")
+
+    else:
+        return render_template('register.html', title="Register", heading="Register")
+
+@app.route("/profile/<int:id>")
+def profile(id):
     """Loads the books and reviews of a specific user
-    given the users username"""
+    given the user id"""
+
+    # Get the correct user
+    user = User.query.get(id)
+    return render_template('profile.html', username=user.name)
+
 
 @app.route("/book/<int:id>")
 def book(id):
