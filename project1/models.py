@@ -6,6 +6,7 @@ from project1 import db
 class Review(db.Model):
     book_id = db.Column(db.String(25), db.ForeignKey('book.id'), primary_key = True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key = True)
+    username = db.Column(db.String(25), nullable=False)
     review = db.Column(db.Text)
     rating = db.Column(db.Float)
 

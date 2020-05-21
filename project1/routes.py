@@ -1,4 +1,4 @@
-from flask import session, render_template, request, redirect, url_for, flash
+from flask import session, render_template, request, redirect, url_for, flash, jsonify
 from project1.models import Book, User, Review
 from project1 import app
 from project1.forms import RegistrationForm, LoginForm
@@ -80,10 +80,55 @@ def profile(id):
     return render_template('profile.html', username=user.name)
 
 
-@app.route("/book/<int:id>")
+@app.route("/api/book/<int:book_id>")
+def apiBook(book_id):
+    """This method is an api method for this web application.
+    It allows other developers to access the database and get a
+    specific book and its data given that books id. Data is
+    presented in standard JSON format"""
+
+    # Grab the book from the data base
+    book = Book.query.filter_by(id=f'{book_id}').first()
+    # Return error if book is None
+    if book is None:
+        return jsonify({"error": "Invalid book name"}), 422
+
+    # Get all of the reviews for the book
+    rs = book.users
+    # Create lists to store all of the individual ratings and reviews
+    reviews = []
+    ratings = []
+    users = []
+
+    # Cycle through the reviews and append reviews and ratings to the lists
+    for review in rs:
+        reviews.append(review.review)
+        ratings.append(review.rating)
+        users.append(review.username)
+
+    return jsonify({
+        "isbn": book.isbn,
+        "title": book.title,
+        "author": book.author,
+        "year": book.year,
+        "ratings": ratings,
+        "reviews": reviews,
+        "users": users
+        })
+
+
+def getApi():
+    """This method allows the web application to
+    grab information from the goodreads API."""
+
+
+
+@app.route("/book/<int:book_id>")
 def book(id):
-    """Displays a specific book and its information
-    given that books id."""
+    """API that is used so that other developers can
+    access the book data in this web application.
+    Data is returned in standard JSON form."""
+
 
 
 def main():
