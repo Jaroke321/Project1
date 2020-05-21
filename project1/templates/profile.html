@@ -1,9 +1,9 @@
 {% extends "index.html" %}
 
 {% block body %}
-  {% if username %}
-    <h2>This is {{ username }}'s Profile Page</h2>
+  {% if current_user.name %}
+    <h2>This is {{ current_user.name }}'s Profile Page</h2>
   {% else %}
-    <h2>User does not exist</h2>
+    <h2>No user</h2>
   {% endif %}
 {% endblock %}
