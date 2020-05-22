@@ -1,9 +1,31 @@
 {% extends "index.html" %}
 
 {% block body %}
-  {% if current_user.name %}
-    <h2>This is {{ current_user.name }}'s Profile Page</h2>
-  {% else %}
-    <h2>No user</h2>
-  {% endif %}
+  <div class="container content-section">
+    <div class="media align-items-center">
+      <img src="{{ img_file }}" class="rounded-circle account-img" width="80">
+      <div class="media-body">
+        <h2 class="account-heading">{{ current_user.name }}</h2>
+        <p class="text-secondary">{{ count }} Book Review's</p>
+      </div>
+      <form enctype="multipart/form-data" action="" method="post">
+        {{ form.hidden_tag() }}
+        <fieldset class="form-group">
+          <legend class="border-bottom mb-4">Account Info</legend>
+          <div class="form-group">
+            {{ form.picture.label() }}
+            {{ form.picture(class="form-control-file") }}
+            {% if form.picture.errors %}
+              {% for error in form.picture.errors %}
+                <span class="text-danger">{{ error }}</span>
+              {% endfor %}
+            {% endif %}
+          </div>
+        </fieldset>
+        <div class="form-group">
+          {{ form.submit(class="btn btn-outline-info") }}
+        </div>
+      </form>
+    </div>
+  </div>
 {% endblock %}

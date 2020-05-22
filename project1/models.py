@@ -12,11 +12,12 @@ class Review(db.Model):
     book_id = db.Column(db.String(25), db.ForeignKey('book.id'), primary_key = True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key = True)
     username = db.Column(db.String(25), nullable=False)
+    bookname = db.Column(db.String(50), nullable=False)
     review = db.Column(db.Text)
     rating = db.Column(db.Float)
 
-    books = db.relationship("Book", back_populates="users")
-    users = db.relationship("User", back_populates="books")
+    books = db.relationship("Book", back_populates="reviews")
+    users = db.relationship("User", back_populates="reviews")
 
 class Book(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -27,13 +28,14 @@ class Book(db.Model):
     count_ratings = db.Column(db.Integer)
     overall_rating = db.Column(db.Float)
 
-    users = db.relationship("Review", back_populates="books")
+    reviews = db.relationship("Review", back_populates="books")
 
 
 # User table to hold all of the users
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(25), nullable=False)
-    password = db.Column(db.String(25), nullable=False)
+    password = db.Column(db.String(60), nullable=False)
+    image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
 
-    books = db.relationship("Review", back_populates="users")
+    reviews = db.relationship("Review", back_populates="users")

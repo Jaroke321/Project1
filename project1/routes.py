@@ -1,8 +1,10 @@
 from flask import session, render_template, request, redirect, url_for, flash, jsonify
 from project1.models import Book, User, Review
 from project1 import app, bcrypt, db
-from project1.forms import RegistrationForm, LoginForm
+from project1.forms import RegistrationForm, LoginForm, UpdateAccountForm
 from flask_login import login_user, current_user, logout_user, login_required
+import csv, secrets, os
+from sqlalchemy import func
 
 # Route to the main homepage
 @app.route("/")
@@ -31,7 +33,7 @@ def login():
             # Success
             login_user(user, remember=form.remember.data)
             next_page = request.args.get('next')
-            return redirect(next_page) if next_page else redirect(url_for('home'))
+            return redirect(next_page) if next_page else redirect(url_for('index'))
         # Unsuccessful
         else:
             flash('Login Unsuccessful. Please check username and password', 'danger')
@@ -82,13 +84,41 @@ def register():
     else:
         return render_template('register.html', title="Register", form=form)
 
-@app.route("/profile")
+def savePicture(form_picture):
+
+    # Create a random path
+    random_hex = secrets.token_hex(8)
+    # Separate the file extension and append the extension to the hex value
+    f_name, f_ext = os.path.splitext(form_picture.filename)
+    picture_fn = random_hex + f_ext
+    # Get the complete path for the picture to be saved to
+    picture_path = os.path.join(app.root_path, 'static/profile_pics', picture_fn)
+    form_picture.save(picture_path) # Save the picture to file with the hexed name
+
+    return picture_fn
+
+
+@app.route("/profile", methods=['GET', 'POST'])
 @login_required
 def profile():
     """Loads the books and reviews of a specific user
     given the user id"""
 
-    return render_template('profile.html')
+    # Load the update form
+    form = UpdateAccountForm()
+    review_count = len(current_user.reviews)
+    # Proceed if the validators are satisfied
+    if form.validate_on_submit():
+        if form.picture.data: # if the user updated their profile pic
+            picture_fn = savePicture(form.picture.data) # Save pic and get path
+            current_user.image_file = picture_fn # Set the users image_file with the new value
+            flash(f'Your Profile Picture Has Been Successfully Updated', 'success')
+            db.session.commit() # Commit changed to the db
+    # Get the image file associated with the user
+    img_file = url_for('static', filename=f'profile_pics/{current_user.image_file}')
+    # Load the profile page with the image file
+    return render_template('profile.html', img_file=img_file, form=form,
+        count=review_count)
 
 
 @app.route("/api/book/<int:book_id>")
@@ -105,7 +135,7 @@ def apiBook(book_id):
         return jsonify({"error": "Invalid book name"}), 422
 
     # Get all of the reviews for the book
-    rs = book.users
+    rs = book.reviews
     # Create lists to store all of the individual ratings and reviews
     reviews = []
     ratings = []
@@ -155,6 +185,29 @@ def main():
         #print(f"{id},  {title},  {author},  {year}")
         book = Book(isbn=id, title=title, author=author, year=year, count_ratings=0, overall_rating=0)
         db.session.add(book)
+
+    temp_pass = bcrypt.generate_password_hash("password").decode('utf-8')
+
+    ## Add some users
+    user1 = User(name="Jaroke", password=temp_pass)
+    user2 = User(name="BenW", password=temp_pass)
+    user3 = User(name="EricKatz", password=temp_pass)
+    # Add users to the database
+    db.session.add(user1)
+    db.session.add(user2)
+    db.session.add(user3)
+
+    # Add some reviews
+    r1 = Review(book_id=1, user_id=1, username=user1.name,
+        bookname="Krondor: The Betrayal", review="Good Book", rating=4.5)
+    r2 = Review(book_id=1, user_id=2, username=user2.name,
+        bookname="Krondor: The Betrayal", review="OK book", rating=3)
+    r3 = Review(book_id=2, user_id=1, username=user1.name,
+        bookname="The Dark Is Rising", review="Not good", rating=2)
+    # Add reviews to the database
+    db.session.add(r1)
+    db.session.add(r2)
+    db.session.add(r3)
 
     #Commit Changes
     db.session.commit()
