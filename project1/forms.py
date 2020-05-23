@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
-from wtforms import StringField, PasswordField, SubmitField, BooleanField
-from wtforms.validators import DataRequired, Length, EqualTo
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, DecimalField, TextAreaField
+from wtforms.validators import DataRequired, Length, EqualTo, NumberRange
 from flask_login import current_user
 
 class RegistrationForm(FlaskForm):
@@ -27,3 +27,9 @@ class UpdateAccountForm(FlaskForm):
     picture = FileField('Update Profile Picture',
         validators=[FileAllowed(['jpg', 'png'])])
     submit = SubmitField('Update')
+
+class ReviewForm(FlaskForm):
+    rating =  DecimalField('Book Rating Out Of 10',
+        validators=([DataRequired(), NumberRange(min=0, max=10)]))
+    review = TextAreaField('Written Review')
+    submit = SubmitField('Submit')

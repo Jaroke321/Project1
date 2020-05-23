@@ -1,7 +1,7 @@
 from flask import session, render_template, request, redirect, url_for, flash, jsonify
 from project1.models import Book, User, Review
 from project1 import app, bcrypt, db
-from project1.forms import RegistrationForm, LoginForm, UpdateAccountForm
+from project1.forms import RegistrationForm, LoginForm, UpdateAccountForm, ReviewForm
 from flask_login import login_user, current_user, logout_user, login_required
 import csv, secrets, os
 from sqlalchemy import func
@@ -116,6 +116,7 @@ def profile():
             db.session.commit() # Commit changed to the db
     # Get the image file associated with the user
     img_file = url_for('static', filename=f'profile_pics/{current_user.image_file}')
+    form.username.data = current_user.name
     # Load the profile page with the image file
     return render_template('profile.html', img_file=img_file, form=form,
         count=review_count)
@@ -137,7 +138,46 @@ def users(id):
 
     return render_template('user.html', name=user.name)
 
+@app.route('/review/<int:id>', methods=['GET', 'POST'])
+@login_required
+def review(id):
+    """Produces a form so that a user can leave a new review for a
+    book. The id parameter is the id associated with a specific book."""
 
+    form = ReviewForm()            # Create the form
+    book = Book.query.get(int(id)) # Get the book from the database
+
+    # Attempts to grab a review of this book by this user
+    r = Review.query.filter_by(book_id=id, user_id=current_user.id).first()
+    heading = "New" # Used as aheading in the HTML
+
+    if book is None:  # Check that the book exists
+        flash('That Book ID Is Invalid', 'info')
+        redirect(url_for('index'))
+
+    if form.validate_on_submit():  # User submitted the form
+
+        new_review = Review(book_id=id, user_id=current_user.id,
+            username=current_user.name, bookname=book.title,
+            review=form.review.data, rating=form.rating.data)
+
+        # Delete the past review before adding the new one
+        if r:
+            db.session.delete(r)
+            db.session.commit()
+
+        db.session.add(new_review)  # Add new review
+        db.session.commit()         # Commit changes to the database
+        flash('Review Was Successfully Added', 'success')  # flash message
+        # Redirect to home Page
+        return redirect(url_for('index'))
+
+    if r:
+        form.review.data = r.review
+        form.rating.data = r.rating
+        heading = "Update"
+
+    return render_template('review.html', heading=heading, form=form, book=book)
 
 @app.route("/api/book/<int:book_id>")
 def apiBook(book_id):
