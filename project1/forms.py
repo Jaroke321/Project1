@@ -22,6 +22,8 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Login')
 
 class UpdateAccountForm(FlaskForm):
+    username = StringField('Username',
+        validators=([Length(min=2, max=20)]))
     picture = FileField('Update Profile Picture',
         validators=[FileAllowed(['jpg', 'png'])])
     submit = SubmitField('Update')

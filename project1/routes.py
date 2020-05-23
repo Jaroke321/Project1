@@ -120,6 +120,24 @@ def profile():
     return render_template('profile.html', img_file=img_file, form=form,
         count=review_count)
 
+@app.route("/user")
+@login_required
+def user():
+    """Displays the information and the review data of a user
+    given that users id. This is used so that users can view
+    other users profiles."""
+
+    return render_template('user.html', name=current_user.name)
+
+@app.route("/users/<int:id>")
+def users(id):
+    """"""
+
+    user = User.query.get(int(id))
+
+    return render_template('user.html', name=user.name)
+
+
 
 @app.route("/api/book/<int:book_id>")
 def apiBook(book_id):
