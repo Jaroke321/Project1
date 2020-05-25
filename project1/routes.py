@@ -133,12 +133,16 @@ def users(id):
     given that users id. This is used so that users can view
     other users profiles and see the reviews that they have left."""
 
-    user = User.query.get(int(id))
+    user = User.query.get(int(id))  # Get the user with the id of id
+    # Get the users profile picture
     img_file = url_for('static', filename=f'profile_pics/{user.image_file}')
-    
-
+    user_prof = False  # Used to determine if the user page is the current users page
+    # See if the current user is navigating to their own page
+    if current_user.id == id:
+        user_prof = True
+    # Render the template
     return render_template('user.html', user=user,
-        count=len(user.reviews), img=img_file)
+        count=len(user.reviews), img=img_file, user_prof=user_prof)
 
 @app.route('/review/<int:id>', methods=['GET', 'POST'])
 @login_required
@@ -157,6 +161,7 @@ def review(id):
         flash('That Book ID Is Invalid', 'info')
         redirect(url_for('index'))
 
+    # User has hit the submit button
     if form.validate_on_submit() and form.submit.data:  # User submitted the form
         new_review = Review(book_id=id, user_id=current_user.id,
             username=current_user.name, bookname=book.title,
@@ -173,14 +178,21 @@ def review(id):
         # Redirect to home Page
         return redirect(url_for('book', id=book.id))
 
+    # If user has already left a review but has not submited the form yet
     if r:
+        # Fill in the form data with the users past review of this book
         form.review.data = r.review
         form.rating.data = r.rating
         heading = "Update"
 
-    if form.delete.data:
-        flash(f'The delete button was pressed', 'success')
-
+    # The user has made a review previously and hit the delete button
+    if form.delete.data and r:
+        db.session.delete(r)
+        db.session.commit()
+        flash(f'Your Review Was Successfully Deleted', 'success')
+        # Take the user back to their user page
+        return redirect(url_for('users', id=current_user.id))
+    # Render the review template
     return render_template('review.html', heading=heading, form=form, book=book)
 
 @app.route("/api/book/<int:book_id>")
@@ -233,8 +245,9 @@ def book(id):
     as all of the review information for that book"""
 
     book = Book.query.get(int(id)) # Get the book from the database
+    # Get the books picture from the static folder
     img_file = url_for('static', filename=f'book_pics/{book.image_file}')
-    reviewed = False
+    reviewed = False  # used to see if the user has reviewed this book
 
     if Review.query.filter_by(book_id=id, user_id=current_user.id).first():
         reviewed = True
