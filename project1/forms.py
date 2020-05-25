@@ -33,3 +33,4 @@ class ReviewForm(FlaskForm):
         validators=([DataRequired(), NumberRange(min=0, max=10)]))
     review = TextAreaField('Written Review')
     submit = SubmitField('Submit')
+    delete = SubmitField('Delete')

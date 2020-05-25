@@ -27,7 +27,7 @@
             <a class="nav-link" href="{{ url_for('index') }}">Home</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('user') }}">My Books</a>
+            <a class="nav-link" href="{{ url_for('users', id=current_user.id) }}">My Books</a>
           </li>
         </ul>
       </div>

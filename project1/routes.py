@@ -9,9 +9,15 @@ from sqlalchemy import func
 # Route to the main homepage
 @app.route("/")
 def index():
-    """Default page"""
+    """Ths route is the default route, or homepage.
+    It will list all of the books in the data base, and
+    allow users to see some information on those books
+    as well as allow users to click and navigate to that books page."""
 
-    return render_template('index.html')
+    books = Book.query.all()  # Get all of the books from the database
+
+    # Render the home page
+    return render_template('home.html', books=books)
 
 @app.route("/login", methods=['GET', 'POST'])
 def login():
@@ -121,22 +127,18 @@ def profile():
     return render_template('profile.html', img_file=img_file, form=form,
         count=review_count)
 
-@app.route("/user")
-@login_required
-def user():
+@app.route("/user/<int:id>")
+def users(id):
     """Displays the information and the review data of a user
     given that users id. This is used so that users can view
-    other users profiles."""
-
-    return render_template('user.html', name=current_user.name)
-
-@app.route("/users/<int:id>")
-def users(id):
-    """"""
+    other users profiles and see the reviews that they have left."""
 
     user = User.query.get(int(id))
+    img_file = url_for('static', filename=f'profile_pics/{user.image_file}')
+    
 
-    return render_template('user.html', name=user.name)
+    return render_template('user.html', user=user,
+        count=len(user.reviews), img=img_file)
 
 @app.route('/review/<int:id>', methods=['GET', 'POST'])
 @login_required
@@ -155,8 +157,7 @@ def review(id):
         flash('That Book ID Is Invalid', 'info')
         redirect(url_for('index'))
 
-    if form.validate_on_submit():  # User submitted the form
-
+    if form.validate_on_submit() and form.submit.data:  # User submitted the form
         new_review = Review(book_id=id, user_id=current_user.id,
             username=current_user.name, bookname=book.title,
             review=form.review.data, rating=form.rating.data)
@@ -170,12 +171,15 @@ def review(id):
         db.session.commit()         # Commit changes to the database
         flash('Review Was Successfully Added', 'success')  # flash message
         # Redirect to home Page
-        return redirect(url_for('index'))
+        return redirect(url_for('book', id=book.id))
 
     if r:
         form.review.data = r.review
         form.rating.data = r.rating
         heading = "Update"
+
+    if form.delete.data:
+        flash(f'The delete button was pressed', 'success')
 
     return render_template('review.html', heading=heading, form=form, book=book)
 
@@ -222,12 +226,21 @@ def getApi():
 
 
 
-@app.route("/book/<int:book_id>")
+@app.route("/book/<int:id>")
 def book(id):
     """This method loads the information for a single book.
     This includes title, isbn number, year published, as well
     as all of the review information for that book"""
 
+    book = Book.query.get(int(id)) # Get the book from the database
+    img_file = url_for('static', filename=f'book_pics/{book.image_file}')
+    reviewed = False
+
+    if Review.query.filter_by(book_id=id, user_id=current_user.id).first():
+        reviewed = True
+
+    return render_template('book.html', book=book, img=img_file,
+        reviewed=reviewed)
 
 
 def main():

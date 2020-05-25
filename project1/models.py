@@ -27,6 +27,7 @@ class Book(db.Model):
     year = db.Column(db.Integer, nullable=False)
     count_ratings = db.Column(db.Integer)
     overall_rating = db.Column(db.Float)
+    image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
 
     reviews = db.relationship("Review", back_populates="books")
 

@@ -1,0 +1,20 @@
+{% extends "index.html" %}
+
+{% block body %}
+
+  {% for book in books %}
+    <article class="media content-section align-items-center">
+      <img src="static/book_pics/{{ book.image_file }}" class="round-circle account-img" width="80">
+      <div class="media-body">
+        <div class="article-metadata">
+          <p class="mr-2">isbn # {{ book.isbn }}</p>
+        </div>
+        <h2><a class="article-title" href="{{ url_for('book',id=book.id) }}">{{ book.title }} by: {{ book.author }}</a></h2>
+        <p class="article-content">Rating: {{ book.overall_rating }} Out Of 10 Stars</p>
+        <p class="article-content">Number of Reviews: {{ book.count_ratings }}</p>
+        <p class="article-content">Published {{ book.year }}</p>
+      </div>
+    </article>
+  {% endfor %}
+
+{% endblock %}
