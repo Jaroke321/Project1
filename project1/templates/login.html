@@ -1,6 +1,7 @@
 {% extends "index.html" %}
 
 {% block body %}
+<div class="col-md-8 justify-content-center">
   <div class="content-section">
     <form action="" method="post">
       {{ form. hidden_tag() }}
@@ -32,5 +33,5 @@
       Need An Account? <a class="ml-2" href="{{ url_for('register') }}">Sign Up Now</a>
     </small>
   </div>
-
+</div>
 {% endblock %}
