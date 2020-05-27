@@ -4,7 +4,7 @@ from project1 import app, bcrypt, db
 from project1.forms import RegistrationForm, LoginForm, UpdateAccountForm, ReviewForm
 from flask_login import login_user, current_user, logout_user, login_required
 import csv, secrets, os
-from sqlalchemy import func
+from sqlalchemy import func, desc
 
 # Route to the main homepage
 @app.route("/")
@@ -150,9 +150,21 @@ def users(id):
     # See if the current user is navigating to their own page
     if current_user.id == id:
         user_prof = True
+
+    review_count = len(user.reviews) # Holds the number of reviews for the user
+    activity_list = []               # Used for the recent activity section for the user
+    count = 0                        # Used to limit the amount of activities to 5
+
+    while ((count < 5) and (count < review_count)):
+        activity_list.append(user.reviews[-(count+1)])
+        count += 1
+
+    reviews = Review.query.filter_by(user_id=user.id).order_by(desc(Review.timestamp)).all()
+
     # Render the template
     return render_template('user.html', user=user,
-        count=len(user.reviews), img=img_file, user_prof=user_prof)
+        count=review_count, img=img_file, user_prof=user_prof,
+        activity_list=activity_list, reviews=reviews)
 
 @app.route('/review/<int:id>', methods=['GET', 'POST'])
 @login_required
