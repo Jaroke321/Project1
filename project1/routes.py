@@ -120,6 +120,16 @@ def profile():
             current_user.image_file = picture_fn # Set the users image_file with the new value
             flash(f'Your Profile Picture Has Been Successfully Updated', 'success')
             db.session.commit() # Commit changed to the db
+
+        # User is attempting to update there username
+        if (form.username.data != current_user.name) and (User.query.filter_by(name=form.username.data).first() is None):
+            # Update the username
+            current_user.name = form.username.data
+            db.session.commit()
+            flash(f'Your Username Has Been Updated Successfully', 'success')
+        else:
+            flsh(f'Sorry, that username is already taken', 'danger')
+
     # Get the image file associated with the user
     img_file = url_for('static', filename=f'profile_pics/{current_user.image_file}')
     form.username.data = current_user.name

@@ -1,7 +1,9 @@
 {% extends "index.html" %}
 
+{% block title}{{ user.name }}{% endblock %}
+
 {% block body %}
-<div class="col-md-8 justify-content-center">
+<div class="col-md-8">
   <div class="container content-section">
     <div class="media align-items-center">
       <img src="{{ img }}" class="rounded-circle account-img" width="80">
@@ -13,7 +15,8 @@
   </div>
   {% for review in user.reviews %}
     <article class="media content-section">
-      <div class="media-body">
+      <img src="/static/book_pics/{{ review.books.image_file }}" width="100">
+      <div class="media-body review-body">
         <div class="article-metadata">
           <h5 class="mr-2">
             <a href="{{ url_for('book', id=review.book_id) }}">Review for: {{ review.bookname }}</a>
@@ -23,8 +26,30 @@
           </h5>
         </div>
         <h4 class="article-title">{{ review.rating }} Out Of 10 Stars</h4>
-        <p class="article-content">{{ review.review }}</p>
+        <p class="article-content">{{ review.books.image_file }}</p>
+      </div>
     </article>
   {% endfor %}
+</div>
+<div class="col-md-4">
+  <div class="card">
+    <div class="card-header">
+      <h5>Recent Activity</h5>
+    </div>
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item">
+        <p>Left a 5 Star review for blah blah blah</p>
+        <p class="mb-2 text-muted">DateTime</p>
+      </li>
+      <li class="list-group-item">
+        <p>Left a 5 Star review for blah blah blah</p>
+        <p class="mb-2 text-muted">DateTime</p>
+      </li>
+      <li class="list-group-item">
+        <p>Left a 5 Star review for blah blah blah</p>
+        <p class="mb-2 text-muted">DateTime</p>
+      </li>
+    </ul>
+  </div>
 </div>
 {% endblock %}
