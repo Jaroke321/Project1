@@ -6,8 +6,8 @@
 <div class="col-md-8 justify-content-center">
   <div class="container content-section">
     <div class="media align-items-center">
-      <img src="{{ img }}" class="round-circle account-img" width="80">
-      <div class="media-body">
+      <img src="{{ img }}" width="150">
+      <div class="media-body review-body">
         <h2 class="border-bottom mb-4 account-heading">{{ book.title }} by: {{ book.author }}</h2>
         <p class="text-secondary">{{ book.overall_rating }} Out Of 10 Stars</p>
         <p class="text-secondary">{{ book.count_ratings }} Book Review's</p>
@@ -24,6 +24,7 @@
     <div class="media-body">
       <div class="article-metadata">
         <h5 class="mr-2">
+          <img src="/static/profile_pics/{{ review.users.image_file }}" class="rounded-circle review-pic" width="80">
           <a href="{{ url_for('users', id=review.user_id) }}">Review by: {{ review.username }}</a>
           {% if current_user.id == review.user_id %}
             <a class="btn btn-outline-info" href="{{ url_for('review', id=review.book_id) }}">Edit</a>

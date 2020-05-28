@@ -184,7 +184,7 @@ def review(id):
         redirect(url_for('index'))
 
     # User has hit the submit button
-    if form.validate_on_submit() and form.submit.data:  # User submitted the form
+    if form.validate_on_submit() and form.submit.data:
         new_review = Review(book_id=id, user_id=current_user.id,
             username=current_user.name, bookname=book.title,
             review=form.review.data, rating=form.rating.data)
@@ -197,6 +197,17 @@ def review(id):
         db.session.add(new_review)  # Add new review
         db.session.commit()         # Commit changes to the database
         flash('Review Was Successfully Added', 'success')  # flash message
+
+        # Recalculate the books ratings
+        sum = 0.0
+        book.count_ratings = len(book.reviews)
+
+        for r in book.reviews:
+            sum += r.rating
+
+        book.overall_rating = sum / book.count_ratings
+        db.session.commit()
+
         # Redirect to home Page
         return redirect(url_for('book', id=book.id))
 
