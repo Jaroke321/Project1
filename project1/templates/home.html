@@ -1,14 +1,12 @@
 {% extends "index.html" %}
 
 {% block title %}Home{% endblock %}
-
 {% block body %}
-  {% for book in books %}
-  <div class="col-sm-12 col-md-6 col-lg-4">
 
+  {% for book in books.items %}
+  <div class="col-3 d-flex align-items-stretch">
     <div class="card border-primary mb-3">
-      <div class="card-header">isbn : {{ book.isbn }}</div>
-      <img class="card-img-top" src="static/book_pics/{{ book.image_file }}">
+      <img class="card-img-top" src="static/book_pics/{{ book.image_file }}" height="200">
       <div class="card-body text-dark">
         <h4 class="card-title"><a href="{{ url_for('book', id=book.id) }}">{{ book.title }}</a></h4>
         <h6 class="card-subtitle mb-2 text-muted">{{ book.author }}</h6>
@@ -17,7 +15,21 @@
           <li class="list-group-item">{{ book.count_ratings }} Rating's</li>
         </ul>
       </div>
+      <div class="card-footer">
+        <small class="text-muted">isbn : {{ book.isbn }}</small>
+      </div>
     </div>
   </div>
+  {% endfor %}
+  {% for page_num in books.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+    {% if page_num %}
+      {% if books.page == page_num %}
+        <a class="btn btn-info mb-4" href="{{ url_for('index', page=page_num) }}">{{ page_num }}</a>
+      {% else %}
+        <a class="btn btn-outline-info mb-4" href="{{ url_for('index', page=page_num) }}">{{ page_num }}</a>
+      {% endif %}
+    {% else %}
+      ...
+    {% endif %}
   {% endfor %}
 {% endblock %}

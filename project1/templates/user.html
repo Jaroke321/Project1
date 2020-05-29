@@ -13,7 +13,7 @@
       </div>
     </div>
   </div>
-  {% for r in reviews %}
+  {% for r in reviews.items %}
     <article class="media content-section">
       <img src="/static/book_pics/{{ r.books.image_file }}" width="100">
       <div class="media-body review-body">
@@ -29,6 +29,17 @@
         <p class="article-content">{{ r.review }}</p>
       </div>
     </article>
+  {% endfor %}
+  {% for page_num in reviews.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+    {% if page_num %}
+      {% if reviews.page == page_num %}
+        <a class="btn btn-info mb-4" href="{{ url_for('users', id=user.id , page=page_num) }}">{{ page_num }}</a>
+      {% else %}
+        <a class="btn btn-outline-info mb-4" href="{{ url_for('users', id=user.id, page=page_num) }}">{{ page_num }}</a>
+      {% endif %}
+    {% else %}
+      ...
+    {% endif %}
   {% endfor %}
 </div>
 <div class="col-md-4">

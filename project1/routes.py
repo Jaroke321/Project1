@@ -14,7 +14,8 @@ def index():
     allow users to see some information on those books
     as well as allow users to click and navigate to that books page."""
 
-    books = Book.query.all()  # Get all of the books from the database
+    page = request.args.get('page', 1, type=int)  # Get url arguements for page
+    books = Book.query.paginate(per_page=12, page=page)  # Only load the current page
 
     # Render the home page
     return render_template('home.html', books=books)
@@ -144,6 +145,8 @@ def users(id):
     other users profiles and see the reviews that they have left."""
 
     user = User.query.get(int(id))  # Get the user with the id of id
+    page = request.args.get('page', 1, type=int)
+
     # Get the users profile picture
     img_file = url_for('static', filename=f'profile_pics/{user.image_file}')
     user_prof = False  # Used to determine if the user page is the current users page
@@ -159,7 +162,9 @@ def users(id):
         activity_list.append(user.reviews[-(count+1)])
         count += 1
 
-    reviews = Review.query.filter_by(user_id=user.id).order_by(desc(Review.timestamp)).all()
+    reviews = Review.query.filter_by(user_id=user.id)\
+        .order_by(desc(Review.timestamp))\
+        .paginate(page=page, per_page=5)
 
     # Render the template
     return render_template('user.html', user=user,
@@ -278,6 +283,8 @@ def book(id):
     as all of the review information for that book"""
 
     book = Book.query.get(int(id)) # Get the book from the database
+    page = request.args.get('page', 1, type=int)
+
     # Get the books picture from the static folder
     img_file = url_for('static', filename=f'book_pics/{book.image_file}')
     reviewed = False  # used to see if the user has reviewed this book
@@ -285,8 +292,12 @@ def book(id):
     if Review.query.filter_by(book_id=id, user_id=current_user.id).first():
         reviewed = True
 
+    reviews = Review.query.filter_by(book_id=book.id)\
+        .order_by(desc(Review.timestamp))\
+        .paginate(page=page, per_page=10)
+
     return render_template('book.html', book=book, img=img_file,
-        reviewed=reviewed)
+        reviewed=reviewed, reviews=reviews)
 
 
 def main():
